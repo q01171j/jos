@@ -3,7 +3,7 @@ import { SidebarNav } from "@/components/incidencias/sidebar-nav";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function PlatformLayout({ children }: { children: ReactNode }) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

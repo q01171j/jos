@@ -50,7 +50,7 @@ export async function createIncidentAction(_: ActionResult, formData: FormData):
     };
   }
 
-  const supabase = createActionClient();
+  const supabase = await createActionClient();
 
   const { data: rpcData } = await supabase.rpc("incident_code_sequence");
   const generatedCode = rpcData ?? generateFallbackCode();
@@ -134,7 +134,7 @@ export async function confirmIncidentAction(
     };
   }
 
-  const supabase = createActionClient();
+  const supabase = await createActionClient();
 
   const { error } = await supabase
     .from("incidents")
@@ -194,7 +194,7 @@ export async function updateIncidentStatusAction(
     };
   }
 
-  const supabase = createActionClient();
+  const supabase = await createActionClient();
   const { error } = await supabase
     .from("incidents")
     .update({

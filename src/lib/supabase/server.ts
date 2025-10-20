@@ -1,21 +1,26 @@
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieMethodsServer } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/env";
 
-export function createServerSupabaseClient() {
-  const cookieStore = cookies();
+export async function createServerSupabaseClient(): Promise<SupabaseClient<Database>> {
+  const cookieStore = await cookies();
 
-  return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll().map(({ name, value }) => ({ name, value }));
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set({ name, value, ...options });
-        });
-      }
+  const cookieMethods: CookieMethodsServer = {
+    getAll() {
+      return cookieStore.getAll().map(({ name, value }) => ({ name, value }));
+    },
+    setAll(cookiesToSet) {
+      cookiesToSet.forEach(({ name, value, options }) => {
+        cookieStore.set({ name, value, ...options });
+      });
     }
+  };
+
+  const client = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: cookieMethods
   });
+
+  return client as unknown as SupabaseClient<Database>;
 }

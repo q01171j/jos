@@ -3,7 +3,7 @@ import { PDFDocument, StandardFonts } from "pdf-lib";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function GET() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("incidents")
     .select("code,user_name,status,created_at,areas(name),technicians(full_name)")
@@ -120,8 +120,10 @@ export async function GET() {
   });
 
   const pdfBytes = await pdfDoc.save();
+  const pdfArrayBuffer = pdfBytes.buffer.slice(0, pdfBytes.byteLength) as ArrayBuffer;
+  const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
-  return new NextResponse(pdfBytes, {
+  return new NextResponse(pdfBlob, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="reporte-incidencias.pdf"`

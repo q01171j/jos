@@ -32,17 +32,22 @@ const ALL_OPTION = "all";
 export const dynamic = "force-dynamic";
 
 export default async function IncidentsPage({ searchParams }: { searchParams: SearchParams }) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const [{ data: areasData }, { data: techniciansData }] = await Promise.all([
     supabase.from("areas").select("id,name").order("name"),
     supabase.from("technicians").select("id,full_name").order("full_name")
   ]);
 
-  const filters = {
+  const filters: {
+    fecha: string;
+    area: string;
+    estado: IncidentStatus | typeof ALL_OPTION;
+    tecnico: string;
+  } = {
     fecha: searchParams.fecha ?? "",
     area: searchParams.area ?? ALL_OPTION,
-    estado: searchParams.estado ?? ALL_OPTION,
+    estado: (searchParams.estado as IncidentStatus | undefined) ?? ALL_OPTION,
     tecnico: searchParams.tecnico ?? ALL_OPTION
   };
 

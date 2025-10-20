@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { RegisterIncidentForm } from "@/components/incidencias/register-incident-form";
 
 export default async function NewIncidentPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const [{ data: areasData }, { data: techniciansData }] = await Promise.all([
     supabase.from("areas").select("id,name").order("name"),

@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { createActionClient } from "@/lib/supabase/actions";
 
-type SignInState = {
+export type SignInState = {
   error?: string;
 };
 
@@ -11,7 +11,10 @@ const DEFAULT_REDIRECT = "/dashboard";
 
 const isSafeRedirect = (path: string) => path.startsWith("/") && !path.startsWith("//");
 
-export async function signInAction(_: SignInState | undefined, formData: FormData): Promise<SignInState | void> {
+export async function signInAction(
+  _prevState: SignInState | void,
+  formData: FormData
+): Promise<SignInState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const redirectToRaw = String(formData.get("redirectTo") ?? "").trim();
@@ -21,7 +24,7 @@ export async function signInAction(_: SignInState | undefined, formData: FormDat
     return { error: "Ingresa tu correo y contrasena." };
   }
 
-  const supabase = createActionClient();
+  const supabase = await createActionClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
@@ -29,4 +32,5 @@ export async function signInAction(_: SignInState | undefined, formData: FormDat
   }
 
   redirect(redirectTo || DEFAULT_REDIRECT);
+  return { error: "" };
 }

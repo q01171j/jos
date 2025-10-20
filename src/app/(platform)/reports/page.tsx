@@ -23,7 +23,7 @@ const REPORT_TYPES = ["mensual", "semanal", "personalizado"] as const;
 const ALL_OPTION = "all";
 
 export default async function ReportsPage({ searchParams }: { searchParams: SearchParams }) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const rawType = searchParams.tipo;
   const selectedType: (typeof REPORT_TYPES)[number] =

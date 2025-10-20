@@ -11,7 +11,7 @@ type Props = {
 };
 
 export default async function ConfirmIncidentPage({ params }: Props) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: primaryData,

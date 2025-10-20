@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieMethodsServer } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/env";
 
@@ -9,17 +9,19 @@ const PROTECTED_PATHS = ["/dashboard", "/incidents", "/reports", "/settings"];
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
-  const supabase = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    cookies: {
-      getAll() {
-        return req.cookies.getAll().map(({ name, value }) => ({ name, value }));
-      },
-      setAll(cookies) {
-        cookies.forEach(({ name, value, options }) => {
-          res.cookies.set({ name, value, ...options });
-        });
-      }
+  const cookieMethods: CookieMethodsServer = {
+    getAll() {
+      return req.cookies.getAll().map(({ name, value }) => ({ name, value }));
+    },
+    setAll(cookiesToSet) {
+      cookiesToSet.forEach(({ name, value, options }) => {
+        res.cookies.set({ name, value, ...options });
+      });
     }
+  };
+
+  const supabase = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: cookieMethods
   });
 
   const {

@@ -35,38 +35,43 @@ type WeeklyPoint = {
 };
 
 async function fetchSummary(): Promise<SummaryRow[]> {
-  const supabase = createServerSupabaseClient();
-  const { data, error } = await supabase.from("dashboard_summary").select("status,total");
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("dashboard_summary")
+    .select("status,total")
+    .returns<SummaryRow[]>();
   if (error) {
     console.error(error);
     return [];
   }
-  return (data as SummaryRow[]) ?? [];
+  return data ?? [];
 }
 
 async function fetchRecentIncidents(): Promise<RecentIncident[]> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("incidents")
     .select("code,user_name,created_at,status,areas(name),technicians(full_name)")
     .order("created_at", { ascending: false })
-    .limit(5);
+    .limit(5)
+    .returns<RecentIncident[]>();
   if (error) {
     console.error(error);
     return [];
   }
-  return (data as RecentIncident[]) ?? [];
+  return data ?? [];
 }
 
 async function fetchWeeklyDistribution(): Promise<WeeklyPoint[]> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { start, end } = getLastNDaysRange(7);
 
   const { data, error } = await supabase
     .from("incidents")
     .select("created_at")
     .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString());
+    .lte("created_at", end.toISOString())
+    .returns<Array<{ created_at: string | null }>>();
 
   if (error) {
     console.error(error);
@@ -74,7 +79,7 @@ async function fetchWeeklyDistribution(): Promise<WeeklyPoint[]> {
 
   const counts = Array.from({ length: WEEKDAY_LABELS.length }, () => 0);
 
-  (data ?? []).forEach((incident: { created_at: string | null }) => {
+  (data ?? []).forEach((incident) => {
     if (!incident.created_at) return;
     const index = getWeekdayIndexFromISO(incident.created_at);
     if (index >= 0) {
@@ -89,14 +94,15 @@ async function fetchWeeklyDistribution(): Promise<WeeklyPoint[]> {
 }
 
 async function fetchMonthlyStatusTotals(): Promise<Record<SummaryRow["status"], number>> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { start, end } = getMonthBoundsFromInput();
 
   const { data, error } = await supabase
     .from("incidents")
     .select("status")
     .gte("created_at", start.toISOString())
-    .lt("created_at", end.toISOString());
+    .lt("created_at", end.toISOString())
+    .returns<Array<{ status: SummaryRow["status"] }>>();
 
   if (error) {
     console.error(error);
@@ -108,7 +114,7 @@ async function fetchMonthlyStatusTotals(): Promise<Record<SummaryRow["status"], 
     Resuelto: 0
   };
 
-  (data ?? []).forEach((row: { status: SummaryRow["status"] }) => {
+  (data ?? []).forEach((row) => {
     if (row.status in totals) {
       totals[row.status] += 1;
     }
